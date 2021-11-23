@@ -9,19 +9,20 @@ const useStyles = makeStyles((theme) => ({
   name: {
   },
   id: {
-  },
-  propName:
-  {
-  },
-  propNameDynamic:
-  {
-    textAlign:"left",
-    color:"red",
-  },
-  propValue:
-  {
-  },
+  }
 }));
+
+function TextField(){
+    
+}
+
+function VideoFeed(){
+    
+}
+
+function Model(){
+
+}
 
 export default function PropertyMapper(props){
     const classes = useStyles();
@@ -30,7 +31,7 @@ export default function PropertyMapper(props){
       if(props.attributes != undefined){
         setLoaded(true);
       }
-    });
+    },[]);
   return(
     <div>
     {

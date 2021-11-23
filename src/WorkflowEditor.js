@@ -1,6 +1,16 @@
 import React from 'react';
 import ReactFlow, { MiniMap, Controls } from 'react-flow-renderer';
-
+import { makeStyles, useTheme } from '@material-ui/core/styles';
+import MenuIcon from '@material-ui/icons/Menu';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import Typography from '@material-ui/core/Typography';
+import Divider from '@material-ui/core/Divider';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import List from '@material-ui/core/List';
 
 const elements = [
   {
@@ -28,7 +38,7 @@ const elements = [
 ];
 
 export default function WorkflowEditor() {
-  return (<div style={{ height: 300 }}>
+  return (<div style={{ height: 700 }}>
     <ReactFlow elements={elements}>
     <MiniMap
       nodeColor={(node) => {

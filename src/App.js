@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import { Router, Switch, Route } from "react-router-dom";
+import React, { Component, useState, useEffect } from "react";
+//import { Router, Switch, Route } from "react-router-dom";
 
 import logo from './logo.svg';
 import './App.css';
@@ -15,10 +15,6 @@ import Divider from '@material-ui/core/Divider';
 
 import Container from '@material-ui/core/Container';
 
-import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
-import CardContent from '@material-ui/core/CardContent';
-
 import Toolbar from '@material-ui/core/Toolbar';
 import Button from '@material-ui/core/Button';
 
@@ -33,12 +29,17 @@ import AccordionSummary from '@material-ui/core/AccordionSummary';
 import Tasks from './Tasks.js';
 import Machines from './Machines.js';
 import WorkflowEditor from './WorkflowEditor.js'
+import Login from './Login.js';
 //const axios = require('axios');
 
-function App() {
+export default function App() {
+  const [isLoggedin,setIsLoggedin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
   return (
     <div className="App">
-
+    {isLoggedin == true ?
+      <SimpleTabs isAdmin={isAdmin} />:<Login setLogin={setIsLoggedin} setAdmin={setIsAdmin}/>}
     </div>
   );
 }
@@ -83,7 +84,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-export default function SimpleTabs() {
+function SimpleTabs(props) {
   const classes = useStyles();
   const [value, setValue] = React.useState(0);
 
@@ -94,7 +95,7 @@ export default function SimpleTabs() {
   return (
     <div className={classes.root}>
       <AppBar position="static">
-        <Typography component="h2">3D Printer App</Typography>
+        <Typography component="h2" variant="h2">3D Printer App</Typography>
         <Tabs
           value={value}
           onChange={handleChange}
@@ -102,7 +103,6 @@ export default function SimpleTabs() {
         >
           <Tab label="Tasks" {...a11yProps(0)} />
           <Tab label="Printers" {...a11yProps(1)} />
-          <Tab label="Workflow" {...a11yProps(2)} />
         </Tabs>
       </AppBar>
       <TabPanel value={value} index={0}>
@@ -110,9 +110,6 @@ export default function SimpleTabs() {
       </TabPanel>
       <TabPanel value={value} index={1}>
         <Machines />
-      </TabPanel>
-      <TabPanel value={value} index={2}>
-        <WorkflowEditor />
       </TabPanel>
     </div>
   );

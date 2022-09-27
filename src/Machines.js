@@ -18,6 +18,8 @@ import MenuItem from '@material-ui/core/MenuItem';
 //import PropertyMapper from './PropertyMapper.js';
 import axios from 'axios';
 //import Box from '@material-ui/material/Box';
+import { useSelector, useDispatch } from 'react-redux'
+import { asyncGetMachines, asyncAddMachine, asyncGetMachine, setMachine, setMachines} from './MachinesSlice.js'
 const mock = true;
 
 const useStyles = makeStyles(theme => ({
@@ -58,11 +60,14 @@ const types = [ "FDM" ]
 
 function Machine(props) {
   const classes = useStyles();
-  const [machine,setMachine] = React.useState({});
+  //const [machine,setMachine] = React.useState({});
+  const machine = useSelector((state) => state.machines.machines.find(machine => machine.id == props.machineId));
+  const dispatch = useDispatch();
     const [open, setOpen] = React.useState(false);
     useEffect(() => {
       if(mock){
-          setMachine({id:props.machineId,name:props.machineName,type:"FDM",material:"PLA",temprature:30,status:"Idle"});
+          //setMachine({id:props.machineId,name:props.machineName,type:"FDM",material:"PLA",temprature:30,status:"Idle"});
+        dispatch(asyncGetMachine(props.machineId))
       }
       else{
           axios.get('/machine/' + props.machine.id).then(function (response){
@@ -160,10 +165,7 @@ function NewMachine(props) {
            axios.post('/addMachine',newMachine).then(function (response){
             // handle success
             }).catch(function (error) {
-                // handle error
-                console.log(error);
-            }).then(function () {
-            // always executed
+                // handle errorsetMachine
           });
            }
           props.setOpen(false);
@@ -240,13 +242,18 @@ function NewMachine(props) {
 
 export default function Machines() {
   const classes = useStyles();
-  const [machines, setMachines] = React.useState([{}]);
+  //const [machines, setMachines] = React.useState([]);
+  const machines = useSelector((state) => state.machines.machines);
+ // const machineSize = useSelector((state) => state.len);
+  const dispatch = useDispatch();
   const [open, setOpen] = React.useState(false);
   useEffect(() => {
       if(mock)
       {
-          setMachines([{id:"M-02",name:"ultimaker"},{id:"M-03",name:"tevo"}]);
-      }
+        //dispatch(setMachines([{id:"M-02",name:"ultimaker"},{id:"M-03",name:"tevo"}]));
+         // setMachines([{id:"M-02",name:"ultimaker"},{id:"M-03",name:"tevo"}]);
+        dispatch(asyncGetMachines());
+        }
       else
       {
       axios.get('/machines').then(function (response){
@@ -278,11 +285,11 @@ export default function Machines() {
     </Grid>
      
     <NewMachine open={open} setOpen={handleClose} />
-    {machines.map((machine) =>
+    {machines.length > 0 && <div><Grid container spacing={2}>{machines.map((machine) =>
         <Grid item md={4} xs={12}>
         <Machine machineId={machine.id} machineName={machine.name} key={machine.id} />
         </Grid>
-    )}
+    )}</Grid></div>}
       
     </Grid>
   );

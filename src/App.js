@@ -1,5 +1,5 @@
 import React, { Component, useState, useEffect } from "react";
-//import { Router, Switch, Route } from "react-router-dom";
+import { Router, Switch, Route, Redirect } from "react-router-dom";
 
 import logo from './logo.svg';
 import './App.css';
@@ -31,16 +31,39 @@ import Machines from './Machines.js';
 import WorkflowEditor from './WorkflowEditor.js'
 import Login from './Login.js';
 //const axios = require('axios');
+import io from 'socket.io-client';
+import { useSelector, useDispatch } from 'react-redux'
 
 export default function App() {
-  const [isLoggedin,setIsLoggedin] = useState(false);
+  const isLoggedin =  useSelector((state) => state.login.isLoggedin);;
   const [isAdmin, setIsAdmin] = useState(false);
 
-  return (
+    const [socket, setSocket] = useState(null);
+
+  useEffect(() => {
+    const newSocket = io();
+    setSocket(newSocket);
+    return () => newSocket.close();
+  }, [setSocket]);
+  
+  /*return (
     <div className="App">
     {isLoggedin == true ?
-      <SimpleTabs isAdmin={isAdmin} />:<Login setLogin={setIsLoggedin} setAdmin={setIsAdmin}/>}
+      <SimpleTabs isAdmin={isAdmin} socket={socket} />:<Login setLogin={setIsLoggedin} setAdmin={setIsAdmin}/>}
     </div>
+  );*/
+  return(
+    <switch>
+      <Route path="/">
+        <Redirect to="/login"/>
+      </Route>
+      <Route path="/login">
+        {isLoggedin? <Redirect to="/dashboard"/>: <Login/>}
+      </Route>
+      <Route path="/dashboard">
+        {isLoggedin? <SimpleTabs isAdmin={isAdmin} socket={socket} />: <Redirect to="/login"/>}
+      </Route>
+    </switch>
   );
 }
 
@@ -106,10 +129,10 @@ function SimpleTabs(props) {
         </Tabs>
       </AppBar>
       <TabPanel value={value} index={0}>
-        <Tasks />
+        <Tasks socket={props.socket}/>
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <Machines />
+        <Machines socket={props.socket}/>
       </TabPanel>
     </div>
   );

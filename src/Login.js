@@ -7,6 +7,8 @@ import axios from 'axios';
 import { Grid } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import Box from '@material-ui/core/Box';
+import { useSelector, useDispatch } from 'react-redux'
+import { asyncLogin, setUserName, setPassword } from './LoginSlice.js';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -38,15 +40,19 @@ const useStyles = makeStyles((theme) => ({
     
   }));
 
-const mock = true;
+const mock = false;
 export default function Login(props)
 {
     const classes = useStyles();
-    const [userName,setUserName] = React.useState("");
-    const [password,setPassword] = React.useState("");
+    //const [userName,setUserName] = React.useState("");
+    //const [password,setPassword] = React.useState("");
+    const login = useSelector((state) => state.login);
+    const dispatch = useDispatch();
 
     const handleSubmit = async e => {
-        if(mock)
+         e.preventDefault();
+         dispatch(asyncLogin());
+        /*if(mock)
         {
             props.setLogin(true);
             props.setAdmin(true);
@@ -54,10 +60,11 @@ export default function Login(props)
         else{
         axios.post('/login',{"userName":userName,"password":password}).then(function (response){
             // handle success
-            if(response.data.login === "true")
+            console.log(response)
+            if(response.data.login == true)
             props.setLogin(true);
             
-            if(response.data.isAdmin === "true")
+            if(response.data.isAdmin == true)
             props.setAdmin(true);
             
             }).catch(function (error) {
@@ -65,7 +72,7 @@ export default function Login(props)
             }).then(function () {
             // always executed
           });
-        }
+        }*/
     }
 return(
     <Grid container justifyContent="center" alignItems="center" spacing={2}>
@@ -75,10 +82,10 @@ return(
     <form onSubmit={handleSubmit}>
     <Grid container justifyContent="center" alignItems="center" spacing={3}>
     <Grid item xs={12}>
-    <TextField id="userName" fullWidth label="User Name" className={classes.textField} variant="filled"  onChange={e => setUserName(e.target.value)}></TextField>
+    <TextField id="userName" fullWidth label="User Name" className={classes.textField} variant="filled"  onChange={e => dispatch(setUserName(e.target.value))}></TextField>
     </Grid>
     <Grid item xs={12}>
-    <TextField id="password" fullWidth label="Password" className={classes.textField} variant="filled"  onChange={e => setPassword(e.target.value)} type='password'></TextField>
+    <TextField id="password" fullWidth label="Password" className={classes.textField} variant="filled"  onChange={e => dispatch(setPassword(e.target.value))}></TextField>
     </Grid>
     <Grid item xs={12}>
     <Button type="submit" fullWidth className={classes.btns}>Login</Button>

@@ -25,6 +25,7 @@ import axios from 'axios';
 import { Grid } from '@material-ui/core';
 //import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 //const axios = require('axios');
+import { useSelector, useDispatch } from 'react-redux'
 const mock = true;
 
 const useStyles = makeStyles((theme) => ({
@@ -103,7 +104,7 @@ const AccordionDetails = withStyles((theme) => ({
 }))(MuiAccordionDetails);
 
   
-const materials = [ "SLA" , "PLA" ]
+const materials = [ "ABS" , "PLA" ]
 const types = [ "FDM" ]
 
 function Task(props) {
@@ -118,7 +119,7 @@ function Task(props) {
         setTask({id:props.taskId,name:props.taskName,type:"FDM",material:"PLA",infill:"10%",modelUri:"",status:props.taskStatus,progress:60});
     }
     else{
-    axios.get('/task/' + props.task.id).then(function (response){
+    axios.get('/task/' + props.taskId).then(function (response){
     // handle success
         setTask(response.data);
         console.log(response);
@@ -134,6 +135,15 @@ function Task(props) {
   //setTask({id:props.taskId,name:props.taskName,type:"FDM",material:"PLA",infill:"10%",model:"",status:props.taskStatus,progress:60});
   },[]);
 
+  useEffect(() => {
+      props.socket.emit("add-to-task-room",props.taskId);
+      props.socket.on(props.taskId + 'data',function(data){
+         setTask(prevState => ({...prevState, progress:data.progress}));
+      });
+      return () => {
+          props.socket.emit("remove-from-task-room",props.taskId);
+        };
+},[props.socket]);
   const handleChange = (panel) => (event, isExpanded) => {
     setExpanded(isExpanded ? panel : false);
   };
@@ -147,16 +157,7 @@ function Task(props) {
             // always executed
           });
     };
-    const handleComplete = () => {
-            axios.post('/task/' + task.id,{id:task.id,action:"complete"}).then(function (response){
-            // handle success
-            }).catch(function (error) {
-                // handle error
-                console.log(error);
-            }).then(function () {
-            // always executed
-          });
-    };
+
   return(
     <Grid item xs={12} md={8}>
     <Accordion expanded={expanded === props.taskId} onChange={handleChange(props.taskId)}>
@@ -225,7 +226,6 @@ function Task(props) {
           <Typography className={classes.body2}>{task.status}</Typography>
         </Grid>
         {task.status === "pending" && <Grid item xs={12}><Button onClick={handleApprove} className={classes.btns}>Approve</Button></Grid>}
-        {task.status === "printed" && <Grid item xs={12}><Button onClick={handleComplete} className={classes.btns}>Complete</Button></Grid>}
       </Grid>
     </AccordionDetails>
   </Accordion>
@@ -236,7 +236,7 @@ function Task(props) {
 function NewTask(props) {
     const classes = useStyles();
     const [newTask, setNewTask] = React.useState({name:"",type:"",material:"",infill:0});
-    
+    const[stlfile,setStlfile] = React.useState(null);
     const handleClose = () => {
         props.setOpen(false);
     };
@@ -263,15 +263,20 @@ function NewTask(props) {
         setNewTask(prevState => ({...prevState, [event.target.name]:event.target.value}));
     };
     const handleFile = (event) => {
-        setNewTask(prevState => ({...prevState, stlfile:event.target.files[0]}));
-        
+        setStlfile(event.target.files[0]);
     };
   const handleSubmit = (event) => {
        event.preventDefault();
     console.log(newTask);
     if(!mock)
     {
-       axios.post('/addtask',newTask).then(function (response){
+        var formData = new FormData();
+        formData.append("name",newTask.name);
+        formData.append("type",newTask.type);
+        formData.append("material",newTask.material);
+        formData.append("infill",newTask.infill);
+        formData.append("stlFile",stlfile);
+       axios.post('/addtask',formData).then(function (response){
             // handle success
             }).catch(function (error) {
                 // handle error
@@ -369,11 +374,11 @@ function NewTask(props) {
       </Dialog>);
 }
 
-export default function Tasks() {
+export default function Tasks(props) {
   const classes = useStyles();
   const [expanded, setExpanded] = React.useState(false);
   const [open, setOpen] = React.useState(false);
-  const [tasks, setTasks] = React.useState([{}]);
+  const [tasks, setTasks] = React.useState([]);
   const [filter, setFilter] = React.useState(0);
 
 useEffect(() => {
@@ -432,9 +437,12 @@ useEffect(() => {
     </Grid>
     
     <NewTask open={open} setOpen={setOpen} />
+    {tasks.length > 0 && 
+        <div>
     {tasks.map((task) =>
-            <Task taskId={task.id} taskStatus={task.status} taskName={task.name} key={task.id} />
+            <Task taskId={task.id} taskStatus={task.status} taskName={task.name} key={task.id} socket={props.socket}/>
         )}
+        </div>}
     </Grid>
   );
 }
